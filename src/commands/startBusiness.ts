@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import type { Command } from "../types/Command.js";
+import { randomUUID } from "crypto";
 
 export const startBusiness: Command = {
   //command data
@@ -26,25 +27,37 @@ export const startBusiness: Command = {
     const userId = interaction.user.id;
     const type = interaction.options.getString("type", true);
 
-    // If the user exists with the  
-    const exists = await users.findOne({ userId });
-    if (exists) return interaction.reply("You already own a business!");
+    const user = await users.findOne({ userId });
 
-    await users.insertOne({
-      userId,
-      balance: 0,
-      business: {
-        type,
-        level: 1,
-        employees: 1,
-        equipment: 1,
-        revenue: 100,
-      },
+    const newBusiness = {
+      id: randomUUID(),
+      type,
+      level: 1,
+      employees: 1,
+      equipment: 1,
+      revenue: 100,
       lastCollect: null,
-    });
+    };
 
-    return interaction.reply(
-      `🎉 You started a ${type}! Use /collect to earn money.`
-    );
+    if (!user) {
+      // User has no businesses yet
+      await users.insertOne({
+        userId,
+        balance: 0,
+        businesses: [newBusiness],
+      });
+      return interaction.reply(`🎉 You started a new **${type}** business!`);
+    }
+
+    // Check if the user already has this type of business
+    const hasBusiness = user.businesses?.some((b: any) => b.type === type);
+
+    if (hasBusiness) {
+      return interaction.reply(`⚠️ You already own a **${type}** business!`);
+    }
+
+    // Add the new business
+    await users.updateOne({ userId }, { $push: { businesses: newBusiness } });
+    return interaction.reply(`🎉 You started a new **${type}** business!`);
   },
 };
