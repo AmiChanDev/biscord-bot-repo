@@ -2,10 +2,11 @@ import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
   AutocompleteInteraction,
+  EmbedBuilder,
+  MessageFlags,
 } from "discord.js";
 import type { Command } from "../types/Command.js";
 import { randomUUID } from "crypto";
-import { MessageFlags } from "discord.js";
 
 export const Business: Command = {
   data: new SlashCommandBuilder()
@@ -43,21 +44,53 @@ export const Business: Command = {
             .setRequired(true)
             .setAutocomplete(true)
         )
+    )
+    // See the stats of the selected business
+    .addSubcommand((sub) =>
+      sub
+        .setName("stats")
+        .setDescription("See the stats of your active business")
+        .addStringOption((option) =>
+          option
+            .setName("type")
+            .setDescription("Select which business to view stats for")
+            .setRequired(true)
+            .setAutocomplete(true)
+        )
     ),
 
   async execute(interaction: ChatInputCommandInteraction, users) {
     const subcommand = interaction.options.getSubcommand();
-
     const userId = interaction.user.id;
-    const user = await users.findOne({ userId });
 
+    // Get or initialize user profile
+    let user = await users.findOne({ userId });
     if (!user) {
-      return interaction.reply({
-        content: "⚠️ You don’t own any businesses yet!",
-        flags: MessageFlags.Ephemeral,
-      });
+      // initialize empty profile if starting
+      if (subcommand === "start") {
+        user = {
+          userId,
+          activeBusinessId: null,
+          businesses: [],
+        };
+        await users.insertOne(user);
+      } else {
+        // block other commands
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ No Businesses Found")
+          .setDescription(
+            "You don’t own any businesses yet! Start with a **Cafe**."
+          )
+          .setColor(0xff0000);
+
+        return interaction.reply({
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
+        });
+      }
     }
 
+    // ---------------- START ----------------
     if (subcommand === "start") {
       const type = interaction.options.getString("type", true);
 
@@ -80,11 +113,45 @@ export const Business: Command = {
       }
 
       if (requiredBalance > 0 && activeBalance < requiredBalance) {
-        return interaction.reply(
-          `⚠️ You need $${requiredBalance} in your current business to unlock the **${type}** business!`
-        );
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ Insufficient Funds")
+          .setDescription(
+            `You need **$${requiredBalance}** in your active business to unlock the **${type}**!`
+          )
+          .setColor(0xffa500);
+
+        return interaction.reply({
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
+        });
       }
 
+      if (user.businesses.length === 0 && type !== "Cafe") {
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ First Business Restriction")
+          .setDescription("Your first business must be a **Cafe**!")
+          .setColor(0xff0000);
+
+        return interaction.reply({
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const hasBusiness = user.businesses.some((b: any) => b.type === type);
+      if (hasBusiness) {
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ Already Owned")
+          .setDescription(`You already own a **${type}** business!`)
+          .setColor(0xffa500);
+
+        return interaction.reply({
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      // Create new business
       const newBusiness = {
         id: randomUUID(),
         type,
@@ -96,19 +163,8 @@ export const Business: Command = {
         lastCollect: null,
       };
 
-      if (user.businesses.length === 0 && type !== "Cafe") {
-        return interaction.reply("⚠️ Your first business must be a **Cafe**!");
-      }
-
-      const hasBusiness = user.businesses.some((b: any) => b.type === type);
-      if (hasBusiness) {
-        return interaction.reply(`⚠️ You already own a **${type}** business!`);
-      }
-
-      // Add business
       await users.updateOne({ userId }, { $push: { businesses: newBusiness } });
 
-      // Set as active if first business
       if (!user.activeBusinessId) {
         await users.updateOne(
           { userId },
@@ -116,9 +172,15 @@ export const Business: Command = {
         );
       }
 
-      return interaction.reply(`🎉 You started a new business: **${type}**!`);
+      const embed = new EmbedBuilder()
+        .setTitle("🎉 Business Started!")
+        .setDescription(`You successfully started a **${type}**!`)
+        .setColor(0x00ff00);
+
+      return interaction.reply({ embeds: [embed] });
     }
 
+    // ---------------- SELECT ----------------
     if (subcommand === "select") {
       const type = interaction.options.getString("type", true);
 
@@ -127,9 +189,14 @@ export const Business: Command = {
       );
 
       if (!business) {
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ Business Not Found")
+          .setDescription(`You don’t own a **${type}** business!`)
+          .setColor(0xff0000);
+
         return interaction.reply({
-          content: `⚠️ You don’t own a **${type}** business!`,
-          flags: MessageFlags.Ephemeral,
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -138,13 +205,81 @@ export const Business: Command = {
         { $set: { activeBusinessId: business.id } }
       );
 
+      const embed = new EmbedBuilder()
+        .setTitle("✅ Business Selected")
+        .setDescription(`Your active business is now **${business.type}**`)
+        .setColor(0x00ff00);
+
       return interaction.reply({
-        content: `✅ Your active business is now: **${business.type}**`,
-        flags: MessageFlags.Ephemeral,
+        embeds: [embed],
+        // flags: MessageFlags.Ephemeral,
       });
     }
+
+    // ---------------- STATS ----------------
+    if (subcommand === "stats") {
+      const type = interaction.options.getString("type", true);
+
+      const business = user.businesses.find(
+        (b: any) => b.type.toLowerCase() === type.toLowerCase()
+      );
+
+      if (!business) {
+        const embed = new EmbedBuilder()
+          .setTitle("⚠️ Business Not Found")
+          .setDescription(`You don’t own a **${type}** business!`)
+          .setColor(0xff0000);
+
+        return interaction.reply({
+          embeds: [embed],
+          // flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle(`📊 ${business.type} Stats`)
+        .setColor(0x3498db) // blue
+        .addFields(
+          {
+            name: "💰 Balance",
+            value: `$${business.balance.toLocaleString()}`,
+          },
+          { name: "🏆 Level", value: `${business.level}` },
+          {
+            name: "👥 Employees",
+            value: `${business.employees}`,
+          },
+          {
+            name: "⚙️ Equipment",
+            value: `${business.equipment}`,
+          },
+          {
+            name: "📊 Revenue",
+            value: `$${business.revenue.toLocaleString()}`,
+          },
+          {
+            name: "⏱️ Last Collected",
+            value: business.lastCollect
+              ? `<t:${Math.floor(
+                  new Date(business.lastCollect).getTime() / 1000
+                )}:R>`
+              : "Not collected yet",
+            inline: false,
+          }
+        )
+        .setFooter({ text: `Owner: ${interaction.user.username}` })
+        .setTimestamp();
+
+      return interaction.reply({
+        embeds: [embed],
+        // flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    //
   },
 
+  //autocomplete handler
   async autocomplete(interaction: AutocompleteInteraction, users) {
     const userId = interaction.user.id;
     const user = await users.findOne({ userId });

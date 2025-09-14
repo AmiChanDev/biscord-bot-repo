@@ -14,7 +14,7 @@ let users: any;
 //
 const allCommands = [Business];
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
   if (!client.user) return;
   console.log(`✅ Logged in as ${client.user.tag}`);
 

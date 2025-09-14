@@ -1,0 +1,7 @@
+Bot invite URL
+https://discord.com/oauth2/authorize?client_id=1416708408786288681&scope=bot&permissions=274878106688
+
+color codes
+success : 0x00ff00
+warning : 0xffa500
+error : 0xff0000
