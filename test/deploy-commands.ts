@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import { StartBusiness } from "../src/commands/Business.js";
 import { REST, Routes } from "discord.js";
+import { Business } from "../src/commands/Business.js";
 
 dotenv.config();
-const commands = [StartBusiness].map((cmd) => cmd.data.toJSON());
+const commands = [Business].map((cmd) => cmd.data.toJSON());
 const rest = new REST({ version: "10" }).setToken(
   process.env.DISCORD_TOKEN as string
 );

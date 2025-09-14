@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import type { Command } from "../types/Command.js";
 import { randomUUID } from "crypto";
+import { MessageFlags } from "discord.js";
 
 export const Business: Command = {
   data: new SlashCommandBuilder()
@@ -53,7 +54,7 @@ export const Business: Command = {
     if (!user) {
       return interaction.reply({
         content: "⚠️ You don’t own any businesses yet!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -128,7 +129,7 @@ export const Business: Command = {
       if (!business) {
         return interaction.reply({
           content: `⚠️ You don’t own a **${type}** business!`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -139,7 +140,7 @@ export const Business: Command = {
 
       return interaction.reply({
         content: `✅ Your active business is now: **${business.type}**`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },
