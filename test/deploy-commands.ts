@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { StartBusiness } from "../src/commands/startBusiness.js";
+import { StartBusiness } from "../src/commands/Business.js";
 import { REST, Routes } from "discord.js";
 
 dotenv.config();

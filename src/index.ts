@@ -3,8 +3,7 @@ import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 
 //commands import
-import { StartBusiness } from "./commands/startBusiness.js";
-import { SelectBusiness } from "./commands/selectBusiness.js";
+import { Business } from "./commands/Business.js";
 
 dotenv.config();
 
@@ -13,7 +12,7 @@ const mongo = new MongoClient(process.env.MONGO_URI as string);
 let users: any;
 
 //
-const allCommands = [StartBusiness, SelectBusiness];
+const allCommands = [Business];
 
 client.once("ready", async () => {
   if (!client.user) return;
