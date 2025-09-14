@@ -8,6 +8,8 @@
 
 ## Employees
 
+Each business has a set of employees with specific roles
+
 ```typescript
 [
   {
