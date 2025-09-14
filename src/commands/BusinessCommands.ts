@@ -164,7 +164,7 @@ export const BusinessCommands: Command = {
         });
       }
 
-      // Create new business
+      // Create new business object
       const newBusiness = {
         id: randomUUID(),
         type,
@@ -176,8 +176,18 @@ export const BusinessCommands: Command = {
         lastCollect: null,
       };
 
+      // Deduct required balance dynamically if needed
+      if (requiredBalance > 0 && user.activeBusinessId) {
+        await users.updateOne(
+          { userId, "businesses.id": user.activeBusinessId },
+          { $inc: { "businesses.$.balance": -requiredBalance } }
+        );
+      }
+
+      // Push new business
       await users.updateOne({ userId }, { $push: { businesses: newBusiness } });
 
+      // Set active business if none
       if (!user.activeBusinessId) {
         await users.updateOne(
           { userId },
@@ -185,12 +195,15 @@ export const BusinessCommands: Command = {
         );
       }
 
-      const embed = new EmbedBuilder()
-        .setTitle("🎉 Business Started!")
-        .setDescription(`You successfully started a **${type}**!`)
-        .setColor(0x00ff00);
-
-      return interaction.reply({ embeds: [embed] });
+      // Reply success
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("🎉 Business Started!")
+            .setDescription(`You successfully started a **${type}**!`)
+            .setColor(0x00ff00),
+        ],
+      });
     }
 
     // ---------------- SELECT ----------------
