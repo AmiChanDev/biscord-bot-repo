@@ -2,10 +2,9 @@ import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import type { Command } from "../types/Command.js";
 import { randomUUID } from "crypto";
 
-export const startBusiness: Command = {
-  //command data
+export const StartBusiness: Command = {
   data: new SlashCommandBuilder()
-    .setName("startbusiness")
+    .setName("start")
     .setDescription("Start your business")
     .addStringOption((option) =>
       option
@@ -13,7 +12,6 @@ export const startBusiness: Command = {
         .setDescription("Choose your business type")
         .setRequired(true)
         .addChoices(
-          //business types
           { name: "Cafe", value: "Cafe" },
           { name: "Restaurant", value: "Restaurant" },
           { name: "Bakery", value: "Bakery" },
@@ -22,7 +20,6 @@ export const startBusiness: Command = {
         )
     ),
 
-  //command execution
   async execute(interaction: ChatInputCommandInteraction, users) {
     const userId = interaction.user.id;
     const type = interaction.options.getString("type", true);
@@ -36,6 +33,7 @@ export const startBusiness: Command = {
       employees: 1,
       equipment: 1,
       revenue: 100,
+      balance: 0,
       lastCollect: null,
     };
 
@@ -43,21 +41,20 @@ export const startBusiness: Command = {
       // User has no businesses yet
       await users.insertOne({
         userId,
-        balance: 0,
         businesses: [newBusiness],
       });
-      return interaction.reply(`🎉 You started a new **${type}** business!`);
+      return interaction.reply(`You started a new **${type}**! 🎉 `);
     }
 
     // Check if the user already has this type of business
     const hasBusiness = user.businesses?.some((b: any) => b.type === type);
 
     if (hasBusiness) {
-      return interaction.reply(`⚠️ You already own a **${type}** business!`);
+      return interaction.reply(`You already own a **${type}** business! ⚠️ `);
     }
 
     // Add the new business
     await users.updateOne({ userId }, { $push: { businesses: newBusiness } });
-    return interaction.reply(`🎉 You started a new **${type}** business!`);
+    return interaction.reply(`You started a new **${type}** business! 🎉`);
   },
 };
