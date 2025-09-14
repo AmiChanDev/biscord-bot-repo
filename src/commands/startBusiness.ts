@@ -26,6 +26,36 @@ export const StartBusiness: Command = {
 
     const user = await users.findOne({ userId });
 
+    // Determine unlock requirements
+    const unlocks: Record<string, number> = {
+      Cafe: 0,
+      Restaurant: 5000,
+      Bakery: 10000,
+      Bookstore: 20000,
+      "Tech Shop": 40000,
+    };
+    const requiredBalance = unlocks[type] ?? 0;
+
+    // Find the current active business
+    let activeBusinessBalance = 0;
+    if (user && user.activeBusinessId) {
+      const activeBusiness = user.businesses.find(
+        (b: any) => b.id === user.activeBusinessId
+      );
+      if (activeBusiness) activeBusinessBalance = activeBusiness.balance;
+    }
+
+    // Check unlock requirement from active business
+    if (
+      user &&
+      requiredBalance > 0 &&
+      activeBusinessBalance < requiredBalance
+    ) {
+      return interaction.reply(
+        `⚠️ You need $${requiredBalance} to unlock the **${type}** business!`
+      );
+    }
+
     const newBusiness = {
       id: randomUUID(),
       type,
@@ -38,23 +68,30 @@ export const StartBusiness: Command = {
     };
 
     if (!user) {
-      // User has no businesses yet
+      if (type !== "Cafe") {
+        return interaction.reply("⚠️ Your first business must be a **Cafe**!");
+      }
+
+      // First business is Cafe, insert user
       await users.insertOne({
         userId,
         businesses: [newBusiness],
+        activeBusinessId: newBusiness.id, // set first business as active
       });
-      return interaction.reply(`You started a new **${type}**! 🎉 `);
+      return interaction.reply(
+        `🎉 You started your first business: **${type}**!`
+      );
     }
 
-    // Check if the user already has this type of business
+    // Prevent duplicate businesses
     const hasBusiness = user.businesses?.some((b: any) => b.type === type);
-
     if (hasBusiness) {
-      return interaction.reply(`You already own a **${type}** business! ⚠️ `);
+      return interaction.reply(`⚠️ You already own a **${type}** business!`);
     }
 
     // Add the new business
     await users.updateOne({ userId }, { $push: { businesses: newBusiness } });
-    return interaction.reply(`You started a new **${type}** business! 🎉`);
+
+    return interaction.reply(`🎉 You started a new business: **${type}**!`);
   },
 };
