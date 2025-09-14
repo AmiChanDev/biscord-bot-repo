@@ -3,8 +3,7 @@ import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 
 //commands import
-import { Business } from "./commands/Business.js";
-
+import { BusinessCommands } from "./commands/BusinessCommands.js";
 dotenv.config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -12,7 +11,7 @@ const mongo = new MongoClient(process.env.MONGO_URI as string);
 let users: any;
 
 //
-const allCommands = [Business];
+const allCommands = [BusinessCommands];
 
 client.once("clientReady", async () => {
   if (!client.user) return;

@@ -8,7 +8,7 @@ import {
 import type { Command } from "../types/Command.js";
 import { randomUUID } from "crypto";
 
-export const Business: Command = {
+export const BusinessCommands: Command = {
   data: new SlashCommandBuilder()
     .setName("business")
     .setDescription("Manage your businesses")
@@ -54,6 +54,19 @@ export const Business: Command = {
           option
             .setName("type")
             .setDescription("Select which business to view stats for")
+            .setRequired(true)
+            .setAutocomplete(true)
+        )
+    )
+    // Hire employees
+    .addSubcommand((sub) =>
+      sub
+        .setName("hire")
+        .setDescription("hire employees for your selected business")
+        .addStringOption((option) =>
+          option
+            .setName("id")
+            .setDescription("Select which employee to hire")
             .setRequired(true)
             .setAutocomplete(true)
         )
@@ -276,6 +289,10 @@ export const Business: Command = {
       });
     }
 
+    // ---------------- Hire ----------------
+    if (subcommand === "hire") {
+      const id = interaction.options.getString("id", true);
+    }
     //
   },
 

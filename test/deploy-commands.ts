@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { REST, Routes } from "discord.js";
-import { Business } from "../src/commands/Business.js";
+import { Business } from "../src/commands/BusinessCommands.js";
 
 dotenv.config();
 const commands = [Business].map((cmd) => cmd.data.toJSON());
