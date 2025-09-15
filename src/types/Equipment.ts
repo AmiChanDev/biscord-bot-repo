@@ -1,6 +1,6 @@
 export interface Equipment {
   id: number;
   name: string;
-  price: number;
+  cost: number;
   boost: number;
 }

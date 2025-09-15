@@ -6,16 +6,18 @@ import {
 } from "discord.js";
 import type { Command } from "../types/Command.js";
 
-// commands
+// Commands
 import { start } from "./business/start.js";
 import { select } from "./business/select.js";
 import { all } from "./business/all.js";
 import { hire } from "./business/hire.js";
+import { stats } from "./business/stats.js";
+import { buyEquipment } from "./business/buy.js";
 
 // Business Data
 import { BusinessData } from "../models/BusinessData.js";
-import { stats } from "./business/stats.js";
 import { EmployeeData } from "../models/EmployeeData.js";
+import { EquipmentData } from "../models/EquipmentData.js";
 
 export const BusinessCommands: Command = {
   data: new SlashCommandBuilder()
@@ -76,6 +78,18 @@ export const BusinessCommands: Command = {
         )
     )
     .addSubcommand((sub) =>
+      sub
+        .setName("buy")
+        .setDescription("Buy equipment for your selected business")
+        .addStringOption((option) =>
+          option
+            .setName("name")
+            .setDescription("Select equipment to buy")
+            .setRequired(true)
+            .setAutocomplete(true)
+        )
+    )
+    .addSubcommand((sub) =>
       sub.setName("all").setDescription("View all your businesses")
     ),
 
@@ -102,7 +116,6 @@ export const BusinessCommands: Command = {
       }
     }
 
-    // Pass BusinessData to the commands
     const context = { users, user, BusinessData };
 
     switch (subcommand) {
@@ -114,6 +127,8 @@ export const BusinessCommands: Command = {
         return stats(interaction, context);
       case "hire":
         return hire(interaction, context);
+      case "buyequipment":
+        return buyEquipment(interaction, context);
       case "all":
         return all(interaction, context);
     }
@@ -126,30 +141,40 @@ export const BusinessCommands: Command = {
     if (!user) return interaction.respond([]);
 
     const focused = interaction.options.getFocused().toLowerCase();
+    const activeBusiness = user.businesses.find(
+      (b: any) => b.id === user.activeBusinessId
+    );
+    if (!activeBusiness) return interaction.respond([]);
 
     if (subcommand === "hire") {
-      // Active business employees
-      const activeBusiness = user.businesses.find(
-        (b: any) => b.id === user.activeBusinessId
-      );
-      if (!activeBusiness) return interaction.respond([]);
-
       const employees = EmployeeData[activeBusiness.type] || [];
-
-      const suggestions = employees
-        .filter((e: any) => e.role.toLowerCase().includes(focused))
-        .map((e: any) => ({ name: e.role, value: e.role }))
-        .slice(0, 25);
-
-      return interaction.respond(suggestions);
-    } else if (subcommand === "select" || subcommand === "stats") {
-      // Suggest user's businesses
-      const suggestions = user.businesses
-        .filter((b: any) => b.type.toLowerCase().includes(focused))
-        .map((b: any) => ({ name: b.type, value: b.type }))
-        .slice(0, 25);
-
-      return interaction.respond(suggestions);
+      return interaction.respond(
+        employees
+          .filter((e: any) => e.role.toLowerCase().includes(focused))
+          .map((e: any) => ({ name: e.role, value: e.role }))
+          .slice(0, 25)
+      );
     }
+
+    if (subcommand === "buyequipment") {
+      const equipments = EquipmentData[activeBusiness.type] || [];
+      return interaction.respond(
+        equipments
+          .filter((eq: any) => eq.name.toLowerCase().includes(focused))
+          .map((eq: any) => ({ name: eq.name, value: eq.name }))
+          .slice(0, 25)
+      );
+    }
+
+    if (subcommand === "select" || subcommand === "stats") {
+      return interaction.respond(
+        user.businesses
+          .filter((b: any) => b.type.toLowerCase().includes(focused))
+          .map((b: any) => ({ name: b.type, value: b.type }))
+          .slice(0, 25)
+      );
+    }
+
+    return interaction.respond([]);
   },
 };
