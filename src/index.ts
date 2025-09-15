@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 //commands import
 import { BusinessCommands } from "./commands/BusinessCommands.js";
+import { startRevenuePerHourHandler } from "./commands/persistent/revenuePerHour.js";
 dotenv.config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -20,6 +21,10 @@ client.once("clientReady", async () => {
   await mongo.connect();
   users = mongo.db(process.env.DB_NAME).collection("users");
 
+  //revenue per hour runner
+  startRevenuePerHourHandler(users);
+
+  //Testing purpose guild register
   const guild = client.guilds.cache.get(process.env.GUILD_ID as string);
   if (guild) {
     await guild.commands.set(allCommands.map((cmd) => cmd.data.toJSON()));
