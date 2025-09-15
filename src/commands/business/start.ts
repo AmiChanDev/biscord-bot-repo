@@ -1,11 +1,11 @@
 import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { randomUUID } from "crypto";
-import type { CommandContext } from "../../types/CommandContext.js";
+import type { BusinessCommandContext } from "../../types/context/BusinessCommandContext.js";
 import type { Business } from "../../types/Business.js";
 
 export const start = async (
   interaction: ChatInputCommandInteraction,
-  context: CommandContext
+  context: BusinessCommandContext
 ) => {
   const { user, users, BusinessData } = context;
   const type = interaction.options.getString("type", true);
@@ -73,11 +73,11 @@ export const start = async (
     id: randomUUID(),
     type,
     level: 1,
-    equipment: 1,
     revenue: 100,
     balance: 0,
     lastCollect: null,
     hiredEmployees: [],
+    boughtEquipments: [],
     employeeBoost: 0,
     equipmentBoost: 0,
   };

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { CommandContext } from "../../types/CommandContext.js";
+import type { CommandContext } from "../../types/context/BusinessCommandContext.js";
 
 export const select = async (
   interaction: ChatInputCommandInteraction,

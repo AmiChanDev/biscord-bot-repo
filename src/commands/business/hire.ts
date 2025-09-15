@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { CommandContext } from "../../types/CommandContext.js";
+import type { BusinessCommandContext } from "../../types/context/BusinessCommandContext.js";
 import { EmployeeData } from "../../models/EmployeeData.js";
 
 export const hire = async (
   interaction: ChatInputCommandInteraction,
-  context: CommandContext
+  context: BusinessCommandContext
 ) => {
   const { user, users } = context;
   const roleName = interaction.options.getString("role", true);
@@ -92,7 +92,7 @@ export const hire = async (
     embeds: [
       new EmbedBuilder()
         .setTitle("👥 Employee Hired")
-        .setDescription(`You successfully hired **${employee.role}**!`)
+        .setDescription(`You successfully hired a **${employee.role}**!`)
         .addFields(
           { name: "Revenue Boost", value: `💰 +${employee.boost}` },
           {
