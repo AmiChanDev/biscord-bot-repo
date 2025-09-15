@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { CommandContext } from "../../types/context/BusinessCommandContext.js";
+import type { BusinessCommandContext } from "../../types/context/BusinessCommandContext.js";
 
 export const stats = async (
   interaction: ChatInputCommandInteraction,
-  context: CommandContext
+  context: BusinessCommandContext
 ) => {
   const { user } = context;
   const type = interaction.options.getString("type", true);
@@ -43,7 +43,14 @@ export const stats = async (
         }`,
       },
       //⚙️
-      { name: "Equipment", value: `${business.equipment}` },
+      {
+        name: "Equipment",
+        value: `${
+          business.boughtEquipments.length
+            ? business.boughtEquipments.map((e: any) => e.role).join("\n")
+            : "No equipments bought"
+        }`,
+      },
       {
         name: "Revenue (Employee + Equipment)",
         value: `📊 $${business.revenue} + (${business.employeeBoost} + ${business.equipmentBoost})`,
