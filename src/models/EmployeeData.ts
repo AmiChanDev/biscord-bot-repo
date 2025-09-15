@@ -1,4 +1,4 @@
-import type { Employee } from "../../types/Employee.js";
+import type { Employee } from "../types/Employee.js";
 
 // ================= Cafe =================
 export const CafeEmployees: Employee[] = [

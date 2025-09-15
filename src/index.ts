@@ -9,6 +9,7 @@ import { startRevenuePerHourHandler } from "./commands/persistent/revenuePerHour
 //data import
 import { EmployeeData } from "./models/EmployeeData.js";
 import { EquipmentData } from "./models/EquipmentData.js";
+import { BusinessData } from "./models/BusinessData.js";
 
 dotenv.config();
 

@@ -14,9 +14,9 @@ export const start = async (
   const unlocks: Record<string, number> = {
     Cafe: 0,
     Restaurent: 10000,
-    Bakery: 20000,
-    Bookstore: 40000,
-    "Tech Shop": 80000,
+    Bakery: 25000,
+    Bookstore: 50000,
+    "Tech Shop": 100000,
   };
 
   const requiredBalance = unlocks[type] ?? 0;
