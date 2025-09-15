@@ -5,6 +5,11 @@ import dotenv from "dotenv";
 //commands import
 import { BusinessCommands } from "./commands/BusinessCommands.js";
 import { startRevenuePerHourHandler } from "./commands/persistent/revenuePerHour.js";
+
+//data import
+import { EmployeeData } from "./models/EmployeeData.js";
+import { EquipmentData } from "./models/EquipmentData.js";
+
 dotenv.config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });

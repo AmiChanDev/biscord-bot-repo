@@ -70,7 +70,7 @@ export const TechShopEquipment: Equipment[] = [
   { id: 10, name: "Assistant Station", basePrice: 1500, boost: 150 },
 ];
 
-// 🔑 Unified Lookup (typed)
+// unified export
 export const EquipmentData: Record<string, Equipment[]> = {
   Cafe: CafeEquipment,
   Restaurant: RestaurantEquipment,
