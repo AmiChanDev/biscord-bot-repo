@@ -29,5 +29,5 @@ export function startRevenuePerHourHandler(users: Collection) {
     } catch (err) {
       console.error("❌ Error in revenue job:", err);
     }
-  }, 1000); // every 1 hour
+  }, 1000000); // every 1 hour
 }

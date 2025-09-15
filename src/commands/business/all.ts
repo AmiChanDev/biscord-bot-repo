@@ -1,31 +1,37 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { UserData } from "../../types/User.js";
+import type { CommandContext } from "../../types/CommandContext.js";
 
 export const all = async (
   interaction: ChatInputCommandInteraction,
-  users: any,
-  user: UserData
+  context: CommandContext
 ) => {
-  if (user.businesses.length === 0) {
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("⚠️ No Businesses Found")
-          .setDescription("You don’t own any businesses yet!")
-          .setColor(0xff0000),
-      ],
-    });
-  }
+  const { user, BusinessData } = context;
 
-  const list = user.businesses
-    .map((b: any, i: number) => `${i + 1}. **${b.type}** (💰 $${b.balance})`)
+  // Owned businesses
+  const ownedList =
+    user.businesses.length > 0
+      ? user.businesses
+          .map(
+            (b: any, i: number) => `${i + 1}. **${b.type}** (💰 $${b.balance})`
+          )
+          .join("\n")
+      : "You don’t own any businesses yet!";
+
+  // Optional: show unowned businesses with unlock cost
+  const unownedList = Object.keys(BusinessData.unlocks)
+    .filter((type) => !user.businesses.some((b: any) => b.type === type))
+    .map((type) => `• **${type}** (Unlock: $${BusinessData.unlocks[type]})`)
     .join("\n");
+
+  const description = `${ownedList}${
+    unownedList ? "\n\nAvailable to unlock:\n" + unownedList : ""
+  }`;
 
   return interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setTitle("📋 All Businesses")
-        .setDescription(list)
+        .setDescription(description)
         .setColor(0x3498db),
     ],
   });

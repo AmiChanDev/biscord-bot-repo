@@ -6,18 +6,21 @@ import {
 } from "discord.js";
 import type { Command } from "../types/Command.js";
 
-//commands
+// commands
 import { start } from "./business/start.js";
 import { select } from "./business/select.js";
-import { stats } from "./business/stats.js";
 import { all } from "./business/all.js";
 import { hire } from "./business/hire.js";
+
+// Business Data
+import { BusinessData } from "../models/BusinessData.js";
+import { stats } from "./business/stats.js";
+import { EmployeeData } from "../models/EmployeeData.js";
 
 export const BusinessCommands: Command = {
   data: new SlashCommandBuilder()
     .setName("business")
     .setDescription("Manage your businesses")
-
     .addSubcommand((sub) =>
       sub
         .setName("start")
@@ -66,7 +69,7 @@ export const BusinessCommands: Command = {
         .setDescription("Hire employees for your selected business")
         .addStringOption((option) =>
           option
-            .setName("id")
+            .setName("role")
             .setDescription("Select which employee to hire")
             .setRequired(true)
             .setAutocomplete(true)
@@ -99,31 +102,54 @@ export const BusinessCommands: Command = {
       }
     }
 
+    // Pass BusinessData to the commands
+    const context = { users, user, BusinessData };
+
     switch (subcommand) {
       case "start":
-        return start(interaction, users, user);
+        return start(interaction, context);
       case "select":
-        return select(interaction, users, user);
+        return select(interaction, context);
       case "stats":
-        return stats(interaction, users, user);
+        return stats(interaction, context);
       case "hire":
-        return hire(interaction, users, user);
+        return hire(interaction, context);
       case "all":
-        return all(interaction, users, user);
+        return all(interaction, context);
     }
   },
 
   async autocomplete(interaction: AutocompleteInteraction, users) {
+    const subcommand = interaction.options.getSubcommand();
     const userId = interaction.user.id;
     const user = await users.findOne({ userId });
-    if (!user?.businesses) return interaction.respond([]);
+    if (!user) return interaction.respond([]);
 
     const focused = interaction.options.getFocused().toLowerCase();
-    const suggestions = user.businesses
-      .filter((b: any) => b.type.toLowerCase().includes(focused))
-      .map((b: any) => ({ name: b.type, value: b.type }))
-      .slice(0, 25);
 
-    await interaction.respond(suggestions);
+    if (subcommand === "hire") {
+      // Active business employees
+      const activeBusiness = user.businesses.find(
+        (b: any) => b.id === user.activeBusinessId
+      );
+      if (!activeBusiness) return interaction.respond([]);
+
+      const employees = EmployeeData[activeBusiness.type] || [];
+
+      const suggestions = employees
+        .filter((e: any) => e.role.toLowerCase().includes(focused))
+        .map((e: any) => ({ name: e.role, value: e.role }))
+        .slice(0, 25);
+
+      return interaction.respond(suggestions);
+    } else if (subcommand === "select" || subcommand === "stats") {
+      // Suggest user's businesses
+      const suggestions = user.businesses
+        .filter((b: any) => b.type.toLowerCase().includes(focused))
+        .map((b: any) => ({ name: b.type, value: b.type }))
+        .slice(0, 25);
+
+      return interaction.respond(suggestions);
+    }
   },
 };

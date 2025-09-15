@@ -1,29 +1,36 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { UserData } from "../../types/User.js";
+import type { CommandContext } from "../../types/CommandContext.js";
 
 export const select = async (
   interaction: ChatInputCommandInteraction,
-  users: any,
-  user: UserData
+  context: CommandContext
 ) => {
+  const { user, users, BusinessData } = context;
   const type = interaction.options.getString("type", true);
 
+  // Check if the user owns this business
   const business = user.businesses.find(
-    (b) => b.type.toLowerCase() === type.toLowerCase()
+    (b: any) => b.type.toLowerCase() === type.toLowerCase()
   );
 
   if (!business) {
+    const unlockCost = BusinessData.unlocks[type] ?? 0;
     return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setTitle("⚠️ Business Not Found")
-          .setDescription(`You don’t own a **${type}** business!`)
+          .setDescription(
+            unlockCost > 0
+              ? `You don’t own a **${type}** business yet! You can unlock it for **$${unlockCost}**.`
+              : `You don’t own a **${type}** business yet!`
+          )
           .setColor(0xff0000),
       ],
-      ephemeral: true, //  visibility
+      ephemeral: true,
     });
   }
 
+  // Set as active business
   await users.updateOne(
     { userId: user.userId },
     { $set: { activeBusinessId: business.id } }

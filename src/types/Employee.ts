@@ -1,6 +1,6 @@
 export interface Employee {
   id: number;
   role: string;
-  baseSalary: number;
+  salary: number;
   boost: number;
 }
