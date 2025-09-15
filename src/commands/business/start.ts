@@ -78,6 +78,8 @@ export const start = async (
     balance: 0,
     lastCollect: null,
     hiredEmployees: [],
+    employeeBoost: 0,
+    equipmentBoost: 0,
   };
 
   await users.updateOne(

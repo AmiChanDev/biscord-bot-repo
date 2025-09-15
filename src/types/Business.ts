@@ -9,4 +9,6 @@ export interface Business {
   balance: number;
   lastCollect: Date | null;
   hiredEmployees: Employee[];
+  employeeBoost: number;
+  equipmentBoost: number;
 }

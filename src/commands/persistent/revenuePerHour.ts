@@ -14,7 +14,11 @@ export function startRevenuePerHourHandler(users: Collection) {
           return {
             ...biz,
             //add employee + equipment later
-            balance: (biz.balance || 0) + (biz.revenue || 0), // add hourly revenue
+            balance:
+              (biz.balance || 0) +
+              (biz.revenue || 0) +
+              (biz.employeeBoost || 0) +
+              (biz.equipmentBoost || 0), // add hourly revenue
             lastCollect: new Date(),
           };
         });
@@ -29,5 +33,5 @@ export function startRevenuePerHourHandler(users: Collection) {
     } catch (err) {
       console.error("❌ Error in revenue job:", err);
     }
-  }, 1000000); // every 1 hour
+  }, 1000 * 60 * 60); // every 1 hour
 }

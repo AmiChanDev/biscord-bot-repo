@@ -81,7 +81,7 @@ export const hire = async (
 
   // Hire
   activeBusiness.hiredEmployees.push(employee);
-  activeBusiness.revenue += employee.boost;
+  activeBusiness.employeeBoost += employee.boost;
 
   await users.updateOne(
     { userId: user.userId, "businesses.id": activeBusiness.id },

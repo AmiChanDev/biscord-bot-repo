@@ -33,9 +33,21 @@ export const stats = async (
     .addFields(
       { name: "Balance", value: `💰 $${business.balance.toLocaleString()}` },
       { name: "Level", value: `🏆 ${business.level}` },
-      { name: "Employees", value: `👥 ${employeeList}` },
-      { name: "Equipment", value: `⚙️ ${business.equipment}` },
-      { name: "Revenue", value: `📊 $${business.revenue.toLocaleString()}` },
+      //👥
+      {
+        name: "Employees",
+        value: `${
+          business.hiredEmployees.length
+            ? business.hiredEmployees.map((e: any) => e.role).join("\n")
+            : "No employees hired"
+        }`,
+      },
+      //⚙️
+      { name: "Equipment", value: `${business.equipment}` },
+      {
+        name: "Revenue (Employee + Equipment)",
+        value: `📊 $${business.revenue} + (${business.employeeBoost} + ${business.equipmentBoost})`,
+      },
       {
         name: "Last Collected",
         value: business.lastCollect
