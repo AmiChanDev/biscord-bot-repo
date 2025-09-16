@@ -127,7 +127,7 @@ export const BusinessCommands: Command = {
         return stats(interaction, context);
       case "hire":
         return hire(interaction, context);
-      case "buyequipment":
+      case "buy":
         return buyEquipment(interaction, context);
       case "all":
         return all(interaction, context);
@@ -156,7 +156,7 @@ export const BusinessCommands: Command = {
       );
     }
 
-    if (subcommand === "buyequipment") {
+    if (subcommand === "buy") {
       const equipments = EquipmentData[activeBusiness.type] || [];
       return interaction.respond(
         equipments
