@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 //commands import
 import { BusinessCommands } from "./commands/BusinessCommands.js";
+import { TutorialCommands } from "./commands/TutorialCommands.js";
 import { startRevenuePerHourHandler } from "./commands/persistent/revenuePerHour.js";
 
 //data import
@@ -18,7 +19,7 @@ const mongo = new MongoClient(process.env.MONGO_URI as string);
 let users: any;
 
 //
-const allCommands = [BusinessCommands];
+const allCommands = [BusinessCommands, TutorialCommands];
 
 client.once("clientReady", async () => {
   if (!client.user) return;
@@ -42,6 +43,7 @@ client.once("clientReady", async () => {
 
 client.on("interactionCreate", async (interaction) => {
   try {
+    // Autocomplete
     if (interaction.isAutocomplete()) {
       const command = allCommands.find(
         (cmd) => cmd.data.name === interaction.commandName
@@ -52,6 +54,19 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
+    // Select Menu
+    if (interaction.isStringSelectMenu()) {
+      const command = allCommands.find(
+        (cmd) =>
+          cmd.selectMenu && cmd.data.name === interaction.customId.split("_")[0]
+      );
+      if (command && command.selectMenu) {
+        await command.selectMenu(interaction, users);
+      }
+      return;
+    }
+
+    // Chat input command
     if (!interaction.isChatInputCommand()) return;
 
     const command = allCommands.find(
@@ -62,7 +77,7 @@ client.on("interactionCreate", async (interaction) => {
     await command.execute(interaction, users);
   } catch (err) {
     console.error(err);
-    if (interaction.isChatInputCommand())
+    if (interaction.isChatInputCommand() || interaction.isStringSelectMenu())
       await interaction.reply({
         content: "❌ An error occurred.",
         ephemeral: true,
