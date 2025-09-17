@@ -31,7 +31,7 @@ export function startRevenuePerHourHandler(users: Collection) {
 
       console.log("✅ Passive revenue added to all businesses.");
     } catch (err) {
-      console.error("❌ Error in revenue job:", err);
+      console.error("❌ Error in passive revenue handler:", err);
     }
   }, 1000 * 60 * 60); // every 1 hour
 }
