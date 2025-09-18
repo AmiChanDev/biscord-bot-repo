@@ -3,6 +3,10 @@ import {
   StringSelectMenuInteraction,
   SlashCommandBuilder,
   EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ButtonInteraction,
 } from "discord.js";
 import type { Command } from "../types/Command.js";
 
@@ -12,22 +16,18 @@ export const TutorialCommands: Command = {
     .setDescription("View all commands categorized"),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    // Show dropdown menu for categories
     await interaction.reply({
       content: "Select a category to view its commands:",
       components: [
         {
-          type: 1, // ActionRow
+          type: 1,
           components: [
             {
-              type: 3, // StringSelectMenu
+              type: 3,
               custom_id: "tutorial_category",
               placeholder: "Choose a category",
               options: [
                 { label: "Business", value: "business" },
-                { label: "Employees", value: "employees" },
-                { label: "Equipment", value: "equipment" },
-                { label: "Economy", value: "economy" },
                 { label: "Help", value: "help" },
               ],
             },
@@ -40,6 +40,7 @@ export const TutorialCommands: Command = {
   async selectMenu(interaction: StringSelectMenuInteraction) {
     const category = interaction.values[0];
     let embed: EmbedBuilder;
+    let components: any[] = [];
 
     switch (category) {
       case "business":
@@ -56,40 +57,38 @@ export const TutorialCommands: Command = {
             ].join("\n")
           )
           .setColor(0x3498db);
-        break;
 
-      case "employees":
-        embed = new EmbedBuilder()
-          .setTitle("👥 Employee Commands")
-          .setDescription(
-            ["`/business hire` → Hire employees for your active business"].join(
-              "\n"
-            )
-          )
-          .setColor(0x1abc9c);
-        break;
+        const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("business_start")
+            .setLabel("Start")
+            .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+            .setCustomId("business_select")
+            .setLabel("Select")
+            .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+            .setCustomId("business_stats")
+            .setLabel("Stats")
+            .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+            .setCustomId("business_all")
+            .setLabel("All")
+            .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+            .setCustomId("business_hire")
+            .setLabel("Hire")
+            .setStyle(ButtonStyle.Primary)
+        );
 
-      case "equipment":
-        embed = new EmbedBuilder()
-          .setTitle("🛠️ Equipment Commands")
-          .setDescription(
-            [
-              "`/business equipment` → Buy equipment for your active business",
-            ].join("\n")
-          )
-          .setColor(0xe67e22);
-        break;
+        const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("business_equipment")
+            .setLabel("Equipment")
+            .setStyle(ButtonStyle.Primary)
+        );
 
-      case "economy":
-        embed = new EmbedBuilder()
-          .setTitle("💰 Economy Commands")
-          .setDescription(
-            [
-              "`/collect` → Collect revenue from your business",
-              "`/balance` → Check your balance",
-            ].join("\n")
-          )
-          .setColor(0xf1c40f);
+        components = [row1, row2];
         break;
 
       case "help":
@@ -107,6 +106,10 @@ export const TutorialCommands: Command = {
         break;
     }
 
-    await interaction.reply({ embeds: [embed], components: [] });
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ embeds: [embed], components });
+    } else {
+      await interaction.reply({ embeds: [embed], components });
+    }
   },
 };

@@ -75,6 +75,8 @@ client.on("interactionCreate", async (interaction) => {
     if (!command) return;
 
     await command.execute(interaction, users);
+
+    // Button click interactions
   } catch (err) {
     console.error(err);
     if (interaction.isChatInputCommand() || interaction.isStringSelectMenu())
