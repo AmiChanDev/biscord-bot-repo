@@ -9,6 +9,7 @@ import {
   ButtonInteraction,
 } from "discord.js";
 import type { Command } from "../types/Command.js";
+import { BusinessCommands } from "./BusinessCommands.js";
 
 export const TutorialCommands: Command = {
   data: new SlashCommandBuilder()
@@ -53,38 +54,38 @@ export const TutorialCommands: Command = {
               "`/business stats` → View stats of a business",
               "`/business all` → View all your businesses",
               "`/business hire` → Hire employees for your active business",
-              "`/business equipment` → Buy equipment for your active business",
+              "`/business buy` → Buy equipment for your active business",
             ].join("\n")
           )
           .setColor(0x3498db);
 
         const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId("business_start")
+            .setCustomId("tutorial_business_start")
             .setLabel("Start")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
-            .setCustomId("business_select")
+            .setCustomId("tutorial_business_select")
             .setLabel("Select")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
-            .setCustomId("business_stats")
+            .setCustomId("tutorial_business_stats")
             .setLabel("Stats")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
-            .setCustomId("business_all")
+            .setCustomId("tutorial_business_all")
             .setLabel("All")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
-            .setCustomId("business_hire")
+            .setCustomId("tutorial_business_hire")
             .setLabel("Hire")
             .setStyle(ButtonStyle.Primary)
         );
 
         const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId("business_equipment")
-            .setLabel("Equipment")
+            .setCustomId("tutorial_business_buy")
+            .setLabel("Buy Equipment")
             .setStyle(ButtonStyle.Primary)
         );
 
@@ -111,5 +112,50 @@ export const TutorialCommands: Command = {
     } else {
       await interaction.reply({ embeds: [embed], components });
     }
+  },
+
+  async buttonHandler(interaction: ButtonInteraction, users: any) {
+    const parts = interaction.customId.split("_"); //id
+    if (parts.length < 3) {
+      return interaction.reply({
+        content: "⚠️ Invalid button.",
+        ephemeral: true,
+      });
+    }
+
+    const subcommand = parts[2]; // start, select, stats, hire, buy, all
+
+    // Find user's active business
+    const userId = interaction.user.id;
+    const user = await users.findOne({ userId });
+    if (!user) {
+      return interaction.reply({
+        content: "⚠️ You don't have any businesses yet.",
+        ephemeral: true,
+      });
+    }
+
+    const activeBusiness = user.businesses.find(
+      (b: any) => b.id === user.activeBusinessId
+    );
+    if (!activeBusiness) {
+      return interaction.reply({
+        content: "⚠️ You don't have an active business.",
+        ephemeral: true,
+      });
+    }
+
+    // Mock ChatInputCommandInteraction.options
+    (interaction as any).options = {
+      getString: (name: string) => {
+        if (name === "type") return activeBusiness.type;
+        if (name === "role" || name === "name") return null;
+        return null;
+      },
+      getSubcommand: () => subcommand,
+    };
+
+    // Redirect to BusinessCommands
+    return BusinessCommands.execute(interaction as any, users);
   },
 };

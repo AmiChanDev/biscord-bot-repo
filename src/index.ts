@@ -56,34 +56,47 @@ client.on("interactionCreate", async (interaction) => {
 
     // Select Menu
     if (interaction.isStringSelectMenu()) {
-      const command = allCommands.find(
-        (cmd) =>
-          cmd.selectMenu && cmd.data.name === interaction.customId.split("_")[0]
-      );
+      const baseId = interaction.customId.split("_")[0];
+      const command = allCommands.find((cmd) => cmd.data.name === baseId);
       if (command && command.selectMenu) {
         await command.selectMenu(interaction, users);
       }
       return;
     }
 
-    // Chat input command
-    if (!interaction.isChatInputCommand()) return;
+    // Button
+    if (interaction.isButton()) {
+      const baseId = interaction.customId.split("_")[0];
+      const command = allCommands.find((cmd) => cmd.data.name === baseId);
+      if (command && command.buttonHandler) {
+        await command.buttonHandler(interaction, users);
+      }
+      return;
+    }
 
-    const command = allCommands.find(
-      (cmd) => cmd.data.name === interaction.commandName
-    );
-    if (!command) return;
+    // Slash Command
+    if (interaction.isChatInputCommand()) {
+      const command = allCommands.find(
+        (cmd) => cmd.data.name === interaction.commandName
+      );
+      if (!command) return;
 
-    await command.execute(interaction, users);
-
-    // Button click interactions
+      await command.execute(interaction, users);
+    }
   } catch (err) {
     console.error(err);
-    if (interaction.isChatInputCommand() || interaction.isStringSelectMenu())
-      await interaction.reply({
-        content: "❌ An error occurred.",
-        ephemeral: true,
-      });
+    if (
+      interaction.isChatInputCommand() ||
+      interaction.isStringSelectMenu() ||
+      interaction.isButton()
+    ) {
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({
+          content: "❌ An error occurred.",
+          ephemeral: true,
+        });
+      }
+    }
   }
 });
 
