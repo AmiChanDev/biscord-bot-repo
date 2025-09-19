@@ -60,36 +60,37 @@ export const TutorialCommands: Command = {
           .setColor(0x3498db);
 
         const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          // new ButtonBuilder()
+          //   .setCustomId("tutorial_business_start")
+          //   .setLabel("Start")
+          //   .setStyle(ButtonStyle.Primary),
+          // new ButtonBuilder()
+          //   .setCustomId("tutorial_business_select")
+          //   .setLabel("Select")
+          //   .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
-            .setCustomId("tutorial_business_start")
-            .setLabel("Start")
-            .setStyle(ButtonStyle.Primary),
-          new ButtonBuilder()
-            .setCustomId("tutorial_business_select")
-            .setLabel("Select")
+            .setCustomId("tutorial_business_all")
+            .setLabel("📊 All Businesses")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId("tutorial_business_stats")
-            .setLabel("Stats")
-            .setStyle(ButtonStyle.Primary),
-          new ButtonBuilder()
-            .setCustomId("tutorial_business_all")
-            .setLabel("All")
-            .setStyle(ButtonStyle.Primary),
-          new ButtonBuilder()
-            .setCustomId("tutorial_business_hire")
-            .setLabel("Hire")
+            .setLabel("✅ Selected Business Stats")
             .setStyle(ButtonStyle.Primary)
+          // new ButtonBuilder()
+          //   .setCustomId("tutorial_business_hire")
+          //   .setLabel("Hire")
+          //   .setStyle(ButtonStyle.Primary)
         );
 
-        const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId("tutorial_business_buy")
-            .setLabel("Buy Equipment")
-            .setStyle(ButtonStyle.Primary)
-        );
+        // const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        //   new ButtonBuilder()
+        //     .setCustomId("tutorial_business_buy")
+        //     .setLabel("Buy Equipment")
+        //     .setStyle(ButtonStyle.Primary)
+        // );
 
-        components = [row1, row2];
+        // components = [row1, row2];
+        components = [row1];
         break;
 
       case "help":
