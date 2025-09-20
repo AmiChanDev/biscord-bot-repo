@@ -178,3 +178,102 @@ export const BusinessCommands: Command = {
     return interaction.respond([]);
   },
 };
+
+// This one is for raw /business
+export const BusinessMainCommand: Command = {
+  data: new SlashCommandBuilder()
+    .setName("biz")
+    .setDescription("Show your business stats")
+    .addStringOption((option) =>
+      option
+        .setName("type")
+        .setDescription("Select which business to view stats for")
+        .setRequired(true)
+        .setAutocomplete(true)
+    ),
+
+  async execute(interaction: ChatInputCommandInteraction, users) {
+    const userId = interaction.user.id;
+    const type = interaction.options.getString("type", true);
+
+    let user = await users.findOne({ userId });
+    if (!user) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("⚠️ No Businesses Found")
+            .setDescription(
+              "You don’t own any businesses yet! Start with a **Cafe**."
+            )
+            .setColor(0xff0000),
+        ],
+      });
+    }
+
+    const business = user.businesses.find(
+      (b: any) => b.type.toLowerCase() === type.toLowerCase()
+    );
+
+    if (!business) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("⚠️ Business Not Found")
+            .setDescription(`You don’t own a **${type}** business!`)
+            .setColor(0xff0000),
+        ],
+      });
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle(`📊 ${business.type} Stats`)
+      .setColor(0x3498db)
+      .addFields(
+        { name: "Balance", value: `💰 $${business.balance.toLocaleString()}` },
+        { name: "Level", value: `🏆 ${business.level}` },
+        {
+          name: "Employees",
+          value: business.hiredEmployees.length
+            ? business.hiredEmployees.map((e: any) => e.role).join("\n")
+            : "No employees hired",
+        },
+        {
+          name: "Equipment",
+          value: business.boughtEquipments.length
+            ? business.boughtEquipments.map((e: any) => e.name).join("\n")
+            : "No equipment bought",
+        },
+        {
+          name: "Revenue (Employee + Equipment)",
+          value: `📊 $${business.revenue} + (${business.employeeBoost} + ${business.equipmentBoost})`,
+        },
+        {
+          name: "Last Collected",
+          value: business.lastCollect
+            ? `⏱️ <t:${Math.floor(
+                new Date(business.lastCollect).getTime() / 1000
+              )}:R>`
+            : "Not collected yet",
+        }
+      )
+      .setFooter({ text: `Owner: ${interaction.user.username}` })
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
+  },
+
+  async autocomplete(interaction: AutocompleteInteraction, users) {
+    const userId = interaction.user.id;
+    const user = await users.findOne({ userId });
+    if (!user) return interaction.respond([]);
+
+    const focused = interaction.options.getFocused().toLowerCase();
+
+    return interaction.respond(
+      user.businesses
+        .filter((b: any) => b.type.toLowerCase().includes(focused))
+        .map((b: any) => ({ name: b.type, value: b.type }))
+        .slice(0, 25)
+    );
+  },
+};

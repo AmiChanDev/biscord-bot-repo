@@ -3,7 +3,10 @@ import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 
 //commands import
-import { BusinessCommands } from "./commands/BusinessCommands.js";
+import {
+  BusinessCommands,
+  BusinessMainCommand,
+} from "./commands/BusinessCommands.js";
 import { TutorialCommands } from "./commands/TutorialCommands.js";
 import { startRevenuePerHourHandler } from "./commands/persistent/revenuePerHour.js";
 
@@ -19,7 +22,7 @@ const mongo = new MongoClient(process.env.MONGO_URI as string);
 let users: any;
 
 //
-const allCommands = [BusinessCommands, TutorialCommands];
+const allCommands = [BusinessMainCommand, BusinessCommands, TutorialCommands];
 
 client.once("clientReady", async () => {
   if (!client.user) return;
