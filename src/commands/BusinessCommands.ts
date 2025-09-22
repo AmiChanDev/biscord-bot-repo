@@ -57,13 +57,13 @@ export const BusinessCommands: Command = {
       sub
         .setName("stats")
         .setDescription("See the stats of your active business")
-        .addStringOption((option) =>
-          option
-            .setName("type")
-            .setDescription("Select which business to view stats for")
-            .setRequired(true)
-            .setAutocomplete(true)
-        )
+        // .addStringOption((option) =>
+        //   option
+        //     .setName("type")
+        //     .setDescription("Select which business to view stats for")
+        //     .setRequired(true)
+        //     .setAutocomplete(true)
+        // )
     )
     .addSubcommand((sub) =>
       sub

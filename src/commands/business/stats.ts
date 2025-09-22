@@ -18,33 +18,22 @@ export const stats = async (
     });
   }
 
-  const type = interaction.options.getString("type", true);
-
-  const business = user.businesses.find(
-    (b: any) => b.type.toLowerCase() === type.toLowerCase()
-  );
-
-  if (!business) {
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("⚠️ Business Not Found")
-          .setDescription(`You don’t own a **${type}** business!`)
-          .setColor(0xff0000),
-      ],
-    });
-  }
-
-  const totalIncome = business.revenue || 0;
-  const totalSpent = business.revenue || 0;
-  const totalEmployees = business.hiredEmployees?.length || 0;
-  const totalEquipment = business.boughtEquipments?.length || 0;
-
   const embed = new EmbedBuilder()
-    .setTitle(`📊 ${business.type} Summary`)
+    .setTitle(`📊 Businesses Summary`)
     .setColor(0x3498db)
-    .setDescription(
-      [
+    .setFooter({ text: `Owner: ${interaction.user.username}` })
+    .setTimestamp();
+
+  // Build stats for each business
+  const businessStats = user.businesses
+    .map((business: any) => {
+      const totalIncome = business.revenue || 0;
+      const totalSpent = business.spent || 0; // fixed: should not be revenue
+      const totalEmployees = business.hiredEmployees?.length || 0;
+      const totalEquipment = business.boughtEquipments?.length || 0;
+
+      return [
+        `🏢 **${business.type}**`,
         `💰 Total Income Made: $${totalIncome.toLocaleString()}`,
         `💸 Total Money Spent: $${totalSpent.toLocaleString()}`,
         ``,
@@ -67,10 +56,12 @@ export const stats = async (
               )}:R>`
             : "Not collected yet"
         }`,
-      ].join("\n")
-    )
-    .setFooter({ text: `Owner: ${interaction.user.username}` })
-    .setTimestamp();
+        "──────────────────────────────",
+      ].join("\n");
+    })
+    .join("\n");
+
+  embed.setDescription(businessStats);
 
   return interaction.reply({ embeds: [embed] });
 };
